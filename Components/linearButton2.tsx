@@ -1,13 +1,9 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import {
-  StyleSheet,
-  Text,
-  TextStyle,
-  TouchableOpacity,
-  ViewStyle,
-} from 'react-native';
+import { StyleSheet, Text, TextStyle, TouchableOpacity, ViewStyle, View } from 'react-native';
 import { ReactNode } from 'react';
 import Colors from '../Colors';
+import { SvgXml } from 'react-native-svg';
+
 interface BasicProps {
   onPress: () => void;
   containerStyle?: ViewStyle;
@@ -15,14 +11,18 @@ interface BasicProps {
   textStyles?: TextStyle;
   disabled?: boolean;
   insetShadowContainerStyle?: ViewStyle;
+  iconXml?: string;
 }
+
 interface ChildrenProps extends BasicProps {
   children: ReactNode;
 }
+
 interface TextProps extends BasicProps {
   text: string;
 }
-export default function LinearButton2(props: TextProps | ChildrenProps) {
+
+export default function LinearButton(props: TextProps | ChildrenProps) {
   return (
     <TouchableOpacity
       disabled={props.disabled}
@@ -31,15 +31,20 @@ export default function LinearButton2(props: TextProps | ChildrenProps) {
     >
       <LinearGradient
         style={[styles.linear, props.linearStyle]}
-        colors={['#FFFCA8',Colors.PRIMARY_600, '#FFAF36','#F1DC83']}
-        start={[0, 0]}
-        end={[1, 1]}
+        colors={[Colors.PRIMARY_600, '#FFAF36']}
+        start={{ x: 0, y: 0 }} // Top
+        end={{ x: 0, y: 1 }}   // Bottom
       >
-        {'children' in props ? (
-          props.children
-        ) : (
-          <Text style={[styles.text, props.textStyles]}>{props.text}</Text>
-        )}
+        <View style={styles.contentWrapper}>
+          {props.iconXml && (
+            <SvgXml xml={props.iconXml} width={18} height={18} style={styles.icon} />
+          )}
+          {'children' in props ? (
+            props.children
+          ) : (
+            <Text style={[styles.text, props.textStyles]}>{props.text}</Text>
+          )}
+        </View>
       </LinearGradient>
     </TouchableOpacity>
   );
@@ -61,13 +66,24 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   container: {
-    elevation: 10,
-    shadowColor: Colors.PRIMARY_600,
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 20.4,
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
+    // Shadow for iOS
+    shadowColor: Colors.PRIMARY_600,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    // Elevation for Android
+    elevation: 6,
+  },
+  contentWrapper: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6.59,
+  },
+  icon: {
+    marginRight: 8,
   },
 });
