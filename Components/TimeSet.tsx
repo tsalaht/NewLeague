@@ -4,7 +4,8 @@ import Colors from "../Colors";
 import fonts from "../fonts";
 import LinearButton2 from "./linearButton2";
 import { useState, useRef } from "react";
-
+import { useDispatch } from 'react-redux';
+import { setSelectedTime } from "../Store/timeSlice";
 interface TimeSetProps {
   visible: boolean;
   onClose: () => void;
@@ -13,7 +14,7 @@ interface TimeSetProps {
 
 export default function TimeSet({ visible, onClose, onSelectTime }: TimeSetProps) {
   if (!visible) return null;
-
+  const dispatch = useDispatch();
   const [selectedHour, setSelectedHour] = useState(6);
   const [selectedMinute, setSelectedMinute] = useState(34);
 
@@ -31,6 +32,7 @@ export default function TimeSet({ visible, onClose, onSelectTime }: TimeSetProps
     const time = `${selectedHour.toString().padStart(2, "0")}:${selectedMinute
       .toString()
       .padStart(2, "0")}`;
+    dispatch(setSelectedTime(time)); // Dispatch the action to store the time
     onSelectTime(time);
     onClose();
   };

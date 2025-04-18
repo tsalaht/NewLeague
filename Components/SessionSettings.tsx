@@ -4,21 +4,36 @@ import Colors from "../Colors";
 import fonts from "../fonts";
 import { SvgXml } from "react-native-svg";
 import { allIcons } from "../Views/alliconst";
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import LinearButton2 from "./linearButton2";
 import BottomSheet from "@gorhom/bottom-sheet";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "../Store/store";
+import { 
+  setWaveIcon, 
+  setDocsIcon, 
+  setRocketIcon, 
+  setRappitIcon, 
+  setTurtleIcon, 
+  setSelectedLevel 
+} from "../Store/sessionSettingsSlice";
 
-interface SessionSettings {
+interface SessionSettingsProps {
   visible: boolean;
   onClose: () => void;
 }
 
-export default function SessionSettings({ visible, onClose }: SessionSettings) {
+export default function SessionSettings({ visible, onClose }: SessionSettingsProps) {
+  const dispatch = useDispatch();
   const bottomSheetRef = useRef<any>(null);
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
   const [activeOption, setActiveOption] = useState<"instant" | "scheduled">("instant");
-  const [activeOption2, setActiveOption2] = useState<any>("rappit");
-  const [selectedLevel, setSelectedLevel] = useState<string>("متوسط"); // Track selected level
+  const [activeOption2, setActiveOption2] = useState<"rocket" | "rappit" | "turtle">("rappit");
+
+  // Retrieve icons and selectedLevel from Redux store
+  const { waveIcon, docsIcon, rocketIcon, rappitIcon, turtleIcon, selectedLevel } = useSelector(
+    (state: RootState) => state.sessionSettings
+  );
 
   const openBottomSheet = useCallback(() => {
     setBottomSheetVisible(true);
@@ -30,33 +45,62 @@ export default function SessionSettings({ visible, onClose }: SessionSettings) {
     bottomSheetRef.current?.close();
   }, []);
 
+  // Functions to generate SVG XML with correct fill color
   const getWaveSvgXml = (isActive: boolean) => {
     const fillColor = isActive ? "#FFFDFA" : "#262B33";
     return allIcons.wave.replace(/fill="white"/g, `fill="${fillColor}"`);
   };
 
-  const getdocsSvgXml = (isActive: boolean) => {
+  const getDocsSvgXml = (isActive: boolean) => {
     const fillColor = isActive ? "#FFFDFA" : "#262B33";
     return allIcons.docs.replace(/fill="#262B33"/g, `fill="${fillColor}"`);
   };
 
-  const getrocketSvgXml = (isActive: boolean) => {
+  const getRocketSvgXml = (isActive: boolean) => {
     const fillColor = isActive ? "#FFFDFA" : "#262B33";
     return allIcons.rocket.replace(/fill="#262B33"/g, `fill="${fillColor}"`);
   };
 
-  const getrappitSvgXml = (isActive: boolean) => {
+  const getRappitSvgXml = (isActive: boolean) => {
     const fillColor = isActive ? "#FFFDFA" : "#262B33";
     return allIcons.rappit2.replace(/fill="[^"]*"/g, `fill="${fillColor}"`);
   };
 
-  const gettutleSvgXml = (isActive: boolean) => {
+  const getTurtleSvgXml = (isActive: boolean) => {
     const fillColor = isActive ? "#FFFDFA" : "#262B33";
     return allIcons.turtle.replace(/fill="#262B33"/g, `fill="${fillColor}"`);
   };
 
+  // Initialize icons on mount based on default states
+  useEffect(() => {
+    dispatch(setWaveIcon(getWaveSvgXml(activeOption === "instant")));
+    dispatch(setDocsIcon(getDocsSvgXml(activeOption === "scheduled")));
+    dispatch(setRocketIcon(getRocketSvgXml(activeOption2 === "rocket")));
+    dispatch(setRappitIcon(getRappitSvgXml(activeOption2 === "rappit")));
+    dispatch(setTurtleIcon(getTurtleSvgXml(activeOption2 === "turtle")));
+  }, [dispatch]);
+
+  // Update icons when activeOption changes
+  useEffect(() => {
+    dispatch(setWaveIcon(getWaveSvgXml(activeOption === "instant")));
+    dispatch(setDocsIcon(getDocsSvgXml(activeOption === "scheduled")));
+  }, [activeOption, dispatch]);
+
+  // Update icons when activeOption2 changes
+  useEffect(() => {
+    dispatch(setRocketIcon(getRocketSvgXml(activeOption2 === "rocket")));
+    dispatch(setRappitIcon(getRappitSvgXml(activeOption2 === "rappit")));
+    dispatch(setTurtleIcon(getTurtleSvgXml(activeOption2 === "turtle")));
+  }, [activeOption2, dispatch]);
+
   const handleLevelSelect = (level: string) => {
-    setSelectedLevel(level);
+    dispatch(setSelectedLevel(level)); // Save level to Redux
+    closeBottomSheet();
+  };
+
+  const handleSave = () => {
+    // Save current state to Redux (already handled by useEffect and handleLevelSelect)
+    onClose();
   };
 
   if (!visible) return null;
@@ -138,7 +182,7 @@ export default function SessionSettings({ visible, onClose }: SessionSettings) {
                 >
                   لعب حر
                 </Text>
-                <SvgXml xml={getWaveSvgXml(activeOption === "instant")} width={25} height={25} />
+                <SvgXml xml={waveIcon || getWaveSvgXml(activeOption === "instant")} width={25} height={25} />
               </View>
             </Pressable>
 
@@ -165,7 +209,7 @@ export default function SessionSettings({ visible, onClose }: SessionSettings) {
                 >
                   لعب محدود
                 </Text>
-                <SvgXml xml={getdocsSvgXml(activeOption === "scheduled")} width={25} height={25} />
+                <SvgXml xml={docsIcon || getDocsSvgXml(activeOption === "scheduled")} width={25} height={25} />
               </View>
             </Pressable>
           </View>
@@ -213,7 +257,7 @@ export default function SessionSettings({ visible, onClose }: SessionSettings) {
                 >
                   5 ث
                 </Text>
-                <SvgXml xml={getrocketSvgXml(activeOption2 === "rocket")} width={25} height={25} />
+                <SvgXml xml={rocketIcon || getRocketSvgXml(activeOption2 === "rocket")} width={25} height={25} />
               </View>
             </Pressable>
 
@@ -240,7 +284,7 @@ export default function SessionSettings({ visible, onClose }: SessionSettings) {
                 >
                   10 ث
                 </Text>
-                <SvgXml xml={getrappitSvgXml(activeOption2 === "rappit")} width={25} height={25} />
+                <SvgXml xml={rappitIcon || getRappitSvgXml(activeOption2 === "rappit")} width={25} height={25} />
               </View>
             </Pressable>
             <Pressable onPress={() => setActiveOption2("turtle")}>
@@ -266,7 +310,7 @@ export default function SessionSettings({ visible, onClose }: SessionSettings) {
                 >
                   30 ث
                 </Text>
-                <SvgXml xml={gettutleSvgXml(activeOption2 === "turtle")} width={25} height={25} />
+                <SvgXml xml={turtleIcon || getTurtleSvgXml(activeOption2 === "turtle")} width={25} height={25} />
               </View>
             </Pressable>
           </View>
@@ -312,12 +356,12 @@ export default function SessionSettings({ visible, onClose }: SessionSettings) {
               </Text>
             </View>
           </Pressable>
-          <Pressable onPress={onClose}>
+          <Pressable onPress={handleSave}>
             <View style={{ ...styles.buttons, height: 0, marginTop: 8 }}>
               <LinearButton2
                 text="حفظ"
                 textStyles={{ fontSize: 12, fontFamily: fonts.almaraiBold }}
-                onPress={() => {}}
+                onPress={handleSave}
                 containerStyle={{
                   width: "100%",
                 }}
@@ -394,9 +438,7 @@ export default function SessionSettings({ visible, onClose }: SessionSettings) {
                 </Text>
               </View>
               {levels.map((level) => (
-                <Pressable key={level} onPress={() => {
-                    handleLevelSelect(level)
-                    closeBottomSheet()}}>
+                <Pressable key={level} onPress={() => handleLevelSelect(level)}>
                   <View
                     style={{
                       ...styles.bottomSheetContent,

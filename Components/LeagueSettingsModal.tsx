@@ -4,20 +4,74 @@ import Colors from "../Colors";
 import fonts from "../fonts";
 import { SvgXml } from "react-native-svg";
 import { allIcons } from "../Views/alliconst";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import LinearButton2 from "./linearButton2";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "../Store/store";
+import { setSelectedTeam, setSelectedGame } from "../Store/leagueSettingsSlice";
 
 interface LeagueSettingsModalProps {
   visible: boolean;
   onClose: () => void;
+  onSave?: (team: string, game: string) => void;
 }
 
-export default function LeagueSettingsModal({ visible, onClose }: LeagueSettingsModalProps) {
+export default function LeagueSettingsModal({ visible, onClose, onSave }: LeagueSettingsModalProps) {
+  const dispatch = useDispatch();
   const [activeOption, setActiveOption] = useState<"instant" | "scheduled">("instant");
   const [isGamesDropdownOpen, setIsGamesDropdownOpen] = useState<boolean>(false);
   const [isPlayersDropdownOpen, setIsPlayersDropdownOpen] = useState<boolean>(false);
-  const [selectedGame, setSelectedGame] = useState<string>("قهوة واحدة");
-  const [selectedTeam, setSelectedTeam] = useState<string>("8 (16 لاعب)");
+  const [selectedGame, setLocalSelectedGame] = useState<string>("قهوة واحدة"); // Renamed to avoid conflict
+  const [selectedTeam, setLocalSelectedTeam] = useState<string>("8 (16 لاعب)");
+  const [countdown, setCountdown] = useState<string>("");
+  const selectedTime = useSelector((state: RootState) => state.time.selectedTime);
+
+  // Function to calculate countdown
+  const calculateCountdown = () => {
+    if (!selectedTime) {
+      setCountdown("لم يتم تحديد وقت");
+      return;
+    }
+
+    const [hours, minutes] = selectedTime.split(":").map(Number);
+    const now = new Date();
+    const selectedDate = new Date();
+    selectedDate.setHours(hours, minutes, 0, 0);
+
+    if (selectedDate < now) {
+      selectedDate.setDate(selectedDate.getDate() + 1);
+    }
+
+    const diffMs = selectedDate.getTime() - now.getTime();
+    const diffSeconds = Math.floor(diffMs / 1000);
+    const days = Math.floor(diffSeconds / (3600 * 24));
+    const hoursLeft = Math.floor((diffSeconds % (3600 * 24)) / 3600);
+    const minutesLeft = Math.floor((diffSeconds % 3600) / 60);
+
+    let countdownText = "";
+    if (days > 0) {
+      countdownText = `بعد ${days} يوم${days > 1 ? "أيام" : ""}`;
+    } else if (hoursLeft > 0) {
+      countdownText = `بعد ${hoursLeft} ساعة${hoursLeft > 1 ? "" : ""}`;
+    } else if (minutesLeft > 0) {
+      countdownText = `بعد ${minutesLeft} دقيقة${minutesLeft > 1 ? "دقائق" : ""}`;
+    } else {
+      countdownText = "يبدأ الآن";
+    }
+
+    setCountdown(countdownText);
+  };
+
+  // Update countdown every minute and when selectedTime or activeOption changes
+  useEffect(() => {
+    if (activeOption === "scheduled") {
+      calculateCountdown();
+      const interval = setInterval(calculateCountdown, 60000);
+      return () => clearInterval(interval);
+    } else {
+      setCountdown("");
+    }
+  }, [selectedTime, activeOption]);
 
   const getClockSvgXml = (isActive: boolean) => {
     const strokeColor = isActive ? "#FFFDFA" : "#262B33";
@@ -27,6 +81,14 @@ export default function LeagueSettingsModal({ visible, onClose }: LeagueSettings
   const getAgendaSvgXml = (isActive: boolean) => {
     const fillColor = isActive ? "#FFFDFA" : "#262B33";
     return allIcons.agenda.replace('fill="#262B33"', `fill="${fillColor}"`);
+  };
+
+  const handleSave = () => {
+    const gameNumber:any = selectedGame === "قهوة واحدة" ? 1 : 3;
+    dispatch(setSelectedTeam(selectedTeam));
+    dispatch(setSelectedGame(gameNumber)) // Dispatch Redux action
+    onSave?.(selectedTeam, selectedGame); // Pass both team and game
+    onClose();
   };
 
   if (!visible) return null;
@@ -83,7 +145,6 @@ export default function LeagueSettingsModal({ visible, onClose }: LeagueSettings
               gap: 4,
             }}
           >
-            {/* Instant Option */}
             <Pressable onPress={() => setActiveOption("instant")}>
               <View
                 style={{
@@ -118,7 +179,6 @@ export default function LeagueSettingsModal({ visible, onClose }: LeagueSettings
                 />
               </View>
             </Pressable>
-            {/* Scheduled Option */}
             <Pressable onPress={() => setActiveOption("scheduled")}>
               <View
                 style={{
@@ -144,7 +204,9 @@ export default function LeagueSettingsModal({ visible, onClose }: LeagueSettings
                     textAlign: "right",
                   }}
                 >
-                  مجدول
+                  {activeOption === "scheduled" && countdown
+                    ? `مجدول (${countdown})`
+                    : "مجدول"}
                 </Text>
                 <SvgXml
                   xml={getAgendaSvgXml(activeOption === "scheduled")}
@@ -193,7 +255,7 @@ export default function LeagueSettingsModal({ visible, onClose }: LeagueSettings
                 <View style={styles.dropdownContainer}>
                   <Pressable
                     onPress={() => {
-                      setSelectedGame("قهوة واحدة");
+                      setLocalSelectedGame("قهوة واحدة"); // Use renamed setter
                       setIsGamesDropdownOpen(false);
                     }}
                   >
@@ -203,7 +265,7 @@ export default function LeagueSettingsModal({ visible, onClose }: LeagueSettings
                   </Pressable>
                   <Pressable
                     onPress={() => {
-                      setSelectedGame("الأفضل من 3 قهوات");
+                      setLocalSelectedGame("الأفضل من 3 قهوات"); // Use renamed setter
                       setIsGamesDropdownOpen(false);
                     }}
                   >
@@ -213,7 +275,7 @@ export default function LeagueSettingsModal({ visible, onClose }: LeagueSettings
                   </Pressable>
                   <Pressable
                     onPress={() => {
-                      setSelectedGame("قهوة واحدة النهائي: الأفضل من 3");
+                      setLocalSelectedGame("قهوة واحدة النهائي: الأفضل من 3"); // Use renamed setter
                       setIsGamesDropdownOpen(false);
                     }}
                   >
@@ -265,7 +327,7 @@ export default function LeagueSettingsModal({ visible, onClose }: LeagueSettings
                 <View style={styles.dropdownContainer}>
                   <Pressable
                     onPress={() => {
-                      setSelectedTeam("4 (8 لاعب)");
+                      setLocalSelectedTeam("4 (8 لاعب)");
                       setIsPlayersDropdownOpen(false);
                     }}
                   >
@@ -274,8 +336,8 @@ export default function LeagueSettingsModal({ visible, onClose }: LeagueSettings
                     </View>
                   </Pressable>
                   <Pressable
-                    onPress={() => {
-                      setSelectedTeam("8 (16 لاعب)");
+                   onPress={() => {
+                      setLocalSelectedTeam("8 (16 لاعب)");
                       setIsPlayersDropdownOpen(false);
                     }}
                   >
@@ -285,7 +347,7 @@ export default function LeagueSettingsModal({ visible, onClose }: LeagueSettings
                   </Pressable>
                   <Pressable
                     onPress={() => {
-                      setSelectedTeam("16 (32 لاعب)");
+                      setLocalSelectedTeam("16 (32 لاعب)");
                       setIsPlayersDropdownOpen(false);
                     }}
                   >
@@ -313,12 +375,12 @@ export default function LeagueSettingsModal({ visible, onClose }: LeagueSettings
               </Text>
             </View>
           </Pressable>
-          <Pressable onPress={onClose}>
+          <Pressable>
             <View style={{ ...styles.buttons, height: 0, marginTop: 8 }}>
               <LinearButton2
                 text="إنشاء دوري"
                 textStyles={{ fontSize: 12, fontFamily: fonts.almaraiBold }}
-                onPress={() => {}}
+                onPress={handleSave}
                 containerStyle={{
                   width: "100%",
                 }}
@@ -365,7 +427,7 @@ const styles = StyleSheet.create({
   },
   dropdownContainer: {
     position: "absolute",
-    top: -110, // Below the boxContainer
+    top: -110,
     right: 0,
     width: 149.5,
     backgroundColor: Colors.BACKGROUND_4,
@@ -376,10 +438,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     flexDirection: "column",
     gap: 4,
-  },
-  dropdownItem: {
-    paddingVertical: 8,
-    paddingHorizontal: 8,
   },
   dropdownItemText: {
     fontFamily: fonts.almaraiRegular,

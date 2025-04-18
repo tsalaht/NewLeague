@@ -1,17 +1,30 @@
-// Components/TimeSet.tsx
-import { View, Text, StyleSheet, Pressable,TextInput } from "react-native";
+import { View, Text, StyleSheet, Pressable, TextInput } from "react-native";
 import { BlurView } from "expo-blur";
-import Colors from "../Colors"; 
+import Colors from "../Colors";
 import fonts from "../fonts";
 import LinearButton2 from "./linearButton2";
 import { allIcons } from "../Views/alliconst";
 import { SvgXml } from "react-native-svg";
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../Store/store";
+import { setPrizeAmount } from "../Store/firstWinnerSlice";
+
 interface FirstWiner {
   visible: boolean;
   onClose: () => void;
 }
 
 export default function TimeSet({ visible, onClose }: FirstWiner) {
+  const dispatch = useDispatch();
+  const { prizeAmount } = useSelector((state: RootState) => state.firstWinner);
+  const [inputValue, setInputValue] = useState<string>(prizeAmount || "");
+
+  const handleConfirm = () => {
+    dispatch(setPrizeAmount(inputValue));
+    onClose();
+  };
+
   if (!visible) return null;
 
   return (
@@ -43,43 +56,47 @@ export default function TimeSet({ visible, onClose }: FirstWiner) {
             marginBottom: 16,
           }}
         >
- الجائزة الأولى
+          الجائزة الأولى
         </Text>
         <Text
-                       style={{
-                         fontFamily: fonts.almaraiRegular,
-                         color: Colors.DEFAULT_WHITE,
-                         fontSize: 10,
-                         textAlign: "right",
-                         marginTop:16
-                       }}
-                     >
-                  حدد جائزة المركز الأول
-                     </Text>
-                     <View style={styles.inputContainer}>
-        <SvgXml xml={allIcons.dimond} />
-<TextInput placeholder="7000" style={styles.inputStyle} placeholderTextColor={'#616671'}/>
-
-</View>
-                      <View style={{ marginTop: 28, width: "100%" }}>
-                        <LinearButton2
-                          text="تأكيد"
-                          textStyles={{ fontSize: 12, fontFamily: fonts.almaraiBold }}
-                          onPress={onClose}
-                          containerStyle={{
-                            width: "100%",
-                            height: 40,
-                          }}
-                          linearStyle={{
-                            width: "100%",
-                            height: 40,
-                            paddingVertical: 0,
-                          }}
-                          
-                        />
-                      </View>
+          style={{
+            fontFamily: fonts.almaraiRegular,
+            color: Colors.DEFAULT_WHITE,
+            fontSize: 10,
+            textAlign: "right",
+            marginTop: 16,
+          }}
+        >
+          حدد جائزة المركز الأول
+        </Text>
+        <View style={styles.inputContainer}>
+          <SvgXml xml={allIcons.dimond} />
+          <TextInput
+            placeholder="7000"
+            style={styles.inputStyle}
+            placeholderTextColor={'#616671'}
+            value={inputValue}
+            onChangeText={setInputValue}
+            keyboardType="numeric"
+          />
+        </View>
+        <View style={{ marginTop: 28, width: "100%" }}>
+          <LinearButton2
+            text="تأكيد"
+            textStyles={{ fontSize: 12, fontFamily: fonts.almaraiBold }}
+            onPress={handleConfirm}
+            containerStyle={{
+              width: "100%",
+              height: 40,
+            }}
+            linearStyle={{
+              width: "100%",
+              height: 40,
+              paddingVertical: 0,
+            }}
+          />
+        </View>
       </View>
-      
     </View>
   );
 }
@@ -90,26 +107,24 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 16,
     backgroundColor: Colors.BACKGROUND_5,
-    width: "85%", 
+    width: "85%",
   },
- 
-  inputContainer:{
-    flexDirection:'row',
-    width:307,
-    height:48,
-    alignItems:'center',
+  inputContainer: {
+    flexDirection: 'row',
+    width: 307,
+    height: 48,
+    alignItems: 'center',
     paddingHorizontal: 16,
-    backgroundColor:Colors.BACKGROUND_4,
-    borderRadius:4,
-    marginTop:4
-
+    backgroundColor: Colors.BACKGROUND_4,
+    borderRadius: 4,
+    marginTop: 4,
   },
-  inputStyle:{
-    backgroundColor:'transparent',
-    flex:1,
-    fontFamily:fonts.almaraiRegular,
-    fontSize:14,
-    color:'white',
-    textAlign:'right'
-  }
+  inputStyle: {
+    backgroundColor: 'transparent',
+    flex: 1,
+    fontFamily: fonts.almaraiRegular,
+    fontSize: 14,
+    color: 'white',
+    textAlign: 'right',
+  },
 });

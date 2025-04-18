@@ -22,6 +22,8 @@ import FirstWiner from "../Components/FirstWiner";
 import Features from "../Components/Features";
 import Money from "../Components/Money";
 import LeagueSettingsModal2 from "../Components/LeagueSettingsModal2";
+import { useSelector } from "react-redux";
+import { RootState } from "../Store/store";
 
 export default function NewLeague() {
   const [selectedTab, setSelectedTab] = useState<string>("adds");
@@ -33,7 +35,25 @@ export default function NewLeague() {
   const [isFFeaturesVisible, setIsFeaturesVisible] = useState<boolean>(false); 
   const [isMoneyVisible, setIsMoneyVisible] = useState<boolean>(false); 
   const [selectedTime, setSelectedTime] = useState<string>("خلال 15 دقيقة");
-
+  const { selectedTeam, selectedGame } = useSelector((state: RootState) => state.leagueSettings);
+  const numberOfPlayers = selectedTeam ? selectedTeam.split(" ")[0] : "16";
+  const prizeAmount = useSelector((state: RootState) => state.firstWinner.prizeAmount);
+  const totalPrice = useSelector((state: RootState) => state.featurePrice.totalPrice);
+  const { waveIcon, docsIcon, rocketIcon, rappitIcon, turtleIcon, selectedLevel } = useSelector(
+    (state: RootState) => state.sessionSettings
+  );
+  let gameSpeed = '10 ث';
+  let gameSpeedIcon = allIcons.rappit2.replace(/fill="[^"]*"/g, `fill="${"#DC9F46"}"`);
+  if (rocketIcon.includes('fill="#FFFDFA"')) {
+    gameSpeed = '5 ث';
+    gameSpeedIcon = allIcons.rocket.replace(/fill="[^"]*"/g, `fill="${"#DC9F46"}"`);
+  } else if (turtleIcon.includes('fill="#FFFDFA"')) {
+    gameSpeed = '30 ث';
+    gameSpeedIcon = allIcons.turtle.replace(/fill="[^"]*"/g, `fill="${"#DC9F46"}"`);
+  }
+  const isWaveActive = waveIcon.includes('fill="#FFFDFA"');
+  const gameType = isWaveActive ? 'لعب حر' : 'لعب محدود';
+  const gameTypeIcon = isWaveActive ? allIcons.leftarrow :  allIcons.docs.replace(/fill="#262B33"/g, `fill="${"#DC9F46"}"`);;
   return (
     <View style={styles.viewContainer}>
       <ImageBackground
@@ -91,12 +111,12 @@ export default function NewLeague() {
                   <View style={styl.controlButtons}>
                     <Pressable onPress={() => setIsSessiontVisible(true)}>
                     <View style={styl.iconsContainer}>
-                      <SvgXml xml={allIcons.leftarrow} />
+                      <SvgXml xml={gameTypeIcon} />
                     </View>
                     </Pressable>
            <Pressable>
            <View style={styl.iconsContainer}>
-                      <SvgXml xml={allIcons.rappit} />
+                      <SvgXml xml={gameSpeedIcon} />
                     </View>
            </Pressable>
                <Pressable>
@@ -122,7 +142,7 @@ export default function NewLeague() {
                           color: Colors.DEFAULT_WHITE,
                         }}
                       >
-                        مبتدئ
+                    {selectedLevel}
                       </Text>
                     </View>
                </Pressable>
@@ -160,7 +180,7 @@ export default function NewLeague() {
                             textAlign: "right",
                           }}
                         >
-                          16
+{numberOfPlayers}
                         </Text>
                       </View>
                     </Pressable>
@@ -175,7 +195,7 @@ export default function NewLeague() {
                             textAlign: "right",
                           }}
                         >
-                          1
+                      {selectedGame}
                         </Text>
                       </View>
                     </Pressable>
@@ -311,7 +331,7 @@ export default function NewLeague() {
                         fontSize: 12,
                       }}
                     >
-                      0
+                 {prizeAmount}
                     </Text>
                   </View>
                   <Text
@@ -336,7 +356,7 @@ export default function NewLeague() {
                         fontSize: 12,
                       }}
                     >
-                      0
+                   {totalPrice}
                     </Text>
                   </View>
                   <Text
@@ -369,7 +389,7 @@ export default function NewLeague() {
                         fontSize: 12,
                       }}
                     >
-                      0
+                     {+totalPrice + +prizeAmount}
                     </Text>
                   </View>
                   <Text

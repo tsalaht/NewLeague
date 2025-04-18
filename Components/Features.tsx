@@ -15,11 +15,35 @@ interface Features {
 
 export default function Features({ visible, onClose }: Features) {
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [activeFeatureBox, setActiveFeatureBox] = useState<((value: boolean) => void) | null>(null); // Store the setActive function
+  const [activeFeatureBox, setActiveFeatureBox] = useState<((value: boolean) => void) | null>(null);
+  // Track pressed state for each FeatureBox
+  const [pressedStates, setPressedStates] = useState<{
+    [key: string]: boolean;
+  }>({
+    "كأس البطولة": false,
+    "خلفية الجلسة": false,
+    "لقب محدد": false,
+    "احتفال بالفوز": false,
+    "تصاميم الورق": false,
+    "رسالة الدوري": false,
+    "دردشة صوتية": false,
+  });
+  // Store selected FeatureBox details for modal
+  const [selectedFeature, setSelectedFeature] = useState<{
+    iconXml: string;
+    title: string;
+    subtitle: string;
+  } | null>(null);
 
-  const handleEditPress = (setActive: (value: boolean) => void) => {
+  const handleEditPress = (
+    setActive: (value: boolean) => void,
+    iconXml: string,
+    title: string,
+    subtitle: string
+  ) => {
     setIsModalVisible(true);
-    setActiveFeatureBox(() => setActive); // Store the setActive function for this FeatureBox
+    setActiveFeatureBox(() => setActive);
+    setSelectedFeature({ iconXml, title, subtitle });
   };
 
   const handleRemovePress = () => {
@@ -27,6 +51,22 @@ export default function Features({ visible, onClose }: Features) {
     if (activeFeatureBox) {
       activeFeatureBox(false); // Reset active state
     }
+    if (selectedFeature) {
+      // Reset pressed state for the selected FeatureBox
+      setPressedStates((prev) => ({
+        ...prev,
+        [selectedFeature.title]: false,
+      }));
+    }
+    setSelectedFeature(null);
+  };
+
+  // Update pressed state for a specific FeatureBox
+  const setPressed = (title: string, value: boolean) => {
+    setPressedStates((prev) => ({
+      ...prev,
+      [title]: value,
+    }));
   };
 
   if (!visible) return null;
@@ -43,7 +83,7 @@ export default function Features({ visible, onClose }: Features) {
       }}
     >
       {/* Modal for editing feature */}
-      {isModalVisible && (
+      {isModalVisible && selectedFeature && (
         <View
           style={{
             width: "100%",
@@ -60,7 +100,7 @@ export default function Features({ visible, onClose }: Features) {
             intensity={100}
             blurReductionFactor={10}
             tint="dark"
-            style={[StyleSheet.absoluteFill,{backgroundColor:"#39404d28"}]}
+            style={[StyleSheet.absoluteFill, { backgroundColor: "#39404d28" }]}
           />
           <View
             style={{
@@ -83,7 +123,7 @@ export default function Features({ visible, onClose }: Features) {
             >
               تعديل الميزة
             </Text>
-            <SvgXml xml={allIcons.cup} />
+            <SvgXml xml={selectedFeature.iconXml} />
             <View style={styles.textsContainer}>
               <Text
                 style={{
@@ -93,7 +133,7 @@ export default function Features({ visible, onClose }: Features) {
                   textAlign: "center",
                 }}
               >
-                كأس البطولة
+                {selectedFeature.title}
               </Text>
               <Text
                 style={{
@@ -103,7 +143,7 @@ export default function Features({ visible, onClose }: Features) {
                   textAlign: "center",
                 }}
               >
-                اختر كأس البطولة
+                {selectedFeature.subtitle}
               </Text>
             </View>
             <View
@@ -170,23 +210,34 @@ export default function Features({ visible, onClose }: Features) {
                 </View>
               </Pressable>
             </View>
-        
           </View>
-          <Pressable style={{width:'100%',alignItems:"center",justifyContent:'center'}} onPress={() => setIsModalVisible(false)}>
-          <View style={{width:'80%',height:30,backgroundColor:'#39404d69',marginTop:19.5,borderRadius:32,alignItems:"center",justifyContent:'center'}}>
-          <Text
-                    style={{
-                      color: "#ffff",
-                      fontFamily: fonts.almaraiBold,
-                      fontSize: 12,
-                      textAlign: "center",
-                    }}
-                  >
-               عودة
-                  </Text>
-</View>
+          <Pressable
+            style={{ width: "100%", alignItems: "center", justifyContent: "center" }}
+            onPress={() => setIsModalVisible(false)}
+          >
+            <View
+              style={{
+                width: "80%",
+                height: 30,
+                backgroundColor: "#39404d69",
+                marginTop: 19.5,
+                borderRadius: 32,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Text
+                style={{
+                  color: "#ffff",
+                  fontFamily: fonts.almaraiBold,
+                  fontSize: 12,
+                  textAlign: "center",
+                }}
+              >
+                عودة
+              </Text>
+            </View>
           </Pressable>
-
         </View>
       )}
 
@@ -212,21 +263,33 @@ export default function Features({ visible, onClose }: Features) {
         </Text>
 
         <View style={styles.WinerContainer}>
-          <ScrollView style={{ paddingBottom: 4 }}   showsVerticalScrollIndicator={false}>
+          <ScrollView style={{ paddingBottom: 4 }} showsVerticalScrollIndicator={false}>
             <View style={styles.boxContainer}>
               <FeatureBox
                 iconXml={allIcons.cup}
                 title="كأس البطولة"
                 subtitle="اختر كأس البطولة"
-                onEdit={(setActive) => handleEditPress(setActive)}
+                onEdit={(setActive) =>
+                  handleEditPress(setActive, allIcons.cup, "كأس البطولة", "اختر كأس البطولة")
+                }
               />
               <FeatureBox
                 iconXml={allIcons.chear2}
                 title="خلفية الجلسة"
                 subtitle="فعل خلفية الجلسة للاعبين"
-                showButton={true}
+                showButton={pressedStates["خلفية الجلسة"] ? false : true}
                 buttonIconXml={allIcons.dimond}
                 buttonText="2000"
+                pressed={pressedStates["خلفية الجلسة"]}
+                setPressed={(value) => setPressed("خلفية الجلسة", value)}
+                onEdit={(setActive) =>
+                  handleEditPress(
+                    setActive,
+                    allIcons.chear2,
+                    "خلفية الجلسة",
+                    "فعل خلفية الجلسة للاعبين"
+                  )
+                }
               />
             </View>
             <View style={styles.boxContainer}>
@@ -234,17 +297,37 @@ export default function Features({ visible, onClose }: Features) {
                 iconXml={allIcons.baner}
                 title="لقب محدد"
                 subtitle="الالقاب المسموح المشاركة بها"
-                showButton={true}
+                showButton={pressedStates["لقب محدد"] ? false : true}
                 buttonIconXml={allIcons.dimond}
                 buttonText="2000"
+                pressed={pressedStates["لقب محدد"]}
+                setPressed={(value) => setPressed("لقب محدد", value)}
+                onEdit={(setActive) =>
+                  handleEditPress(
+                    setActive,
+                    allIcons.baner,
+                    "لقب محدد",
+                    "الالقاب المسموح المشاركة بها"
+                  )
+                }
               />
               <FeatureBox
                 iconXml={allIcons.winer}
                 title="احتفال بالفوز"
                 subtitle="احتفل بفريقك المفضل"
-                showButton={true}
+                showButton={pressedStates["احتفال بالفوز"] ? false : true}
                 buttonIconXml={allIcons.dimond}
                 buttonText="2000"
+                pressed={pressedStates["احتفال بالفوز"]}
+                setPressed={(value) => setPressed("احتفال بالفوز", value)}
+                onEdit={(setActive) =>
+                  handleEditPress(
+                    setActive,
+                    allIcons.winer,
+                    "احتفال بالفوز",
+                    "احتفل بفريقك المفضل"
+                  )
+                }
               />
             </View>
             <View style={styles.boxContainer}>
@@ -252,17 +335,37 @@ export default function Features({ visible, onClose }: Features) {
                 iconXml={allIcons.cards2}
                 title="تصاميم الورق"
                 subtitle="حدد تصاميم ورق الدوري"
-                showButton={true}
+                showButton={pressedStates["تصاميم الورق"] ? false : true}
                 buttonIconXml={allIcons.dimond}
                 buttonText="2000"
+                pressed={pressedStates["تصاميم الورق"]}
+                setPressed={(value) => setPressed("تصاميم الورق", value)}
+                onEdit={(setActive) =>
+                  handleEditPress(
+                    setActive,
+                    allIcons.cards2,
+                    "تصاميم الورق",
+                    "حدد تصاميم ورق الدوري"
+                  )
+                }
               />
               <FeatureBox
                 iconXml={allIcons.letter}
                 title="رسالة الدوري"
                 subtitle="اكتب رسالتك لتظهر للجميع"
-                showButton={true}
+                showButton={pressedStates["رسالة الدوري"] ? false : true}
                 buttonIconXml={allIcons.dimond}
                 buttonText="2000"
+                pressed={pressedStates["رسالة الدوري"]}
+                setPressed={(value) => setPressed("رسالة الدوري", value)}
+                onEdit={(setActive) =>
+                  handleEditPress(
+                    setActive,
+                    allIcons.letter,
+                    "رسالة الدوري",
+                    "اكتب رسالتك لتظهر للجميع"
+                  )
+                }
               />
             </View>
             <View
@@ -277,9 +380,19 @@ export default function Features({ visible, onClose }: Features) {
                 iconXml={allIcons.message}
                 title="دردشة صوتية"
                 subtitle="فعل الدردشة الصوتية للاعبين"
-                showButton={true}
+                showButton={pressedStates["دردشة صوتية"] ? false : true}
                 buttonIconXml={allIcons.dimond}
                 buttonText="2000"
+                pressed={pressedStates["دردشة صوتية"]}
+                setPressed={(value) => setPressed("دردشة صوتية", value)}
+                onEdit={(setActive) =>
+                  handleEditPress(
+                    setActive,
+                    allIcons.message,
+                    "دردشة صوتية",
+                    "فعل الدردشة الصوتية للاعبين"
+                  )
+                }
               />
             </View>
           </ScrollView>

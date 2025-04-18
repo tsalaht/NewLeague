@@ -1,10 +1,11 @@
-// Components/FeatureBox.tsx
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import { SvgXml } from "react-native-svg";
 import Colors from "../Colors";
 import fonts from "../fonts";
 import { allIcons } from "../Views/alliconst";
 import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { addFeaturePrice } from "../Store/featurePriceSlice";
 
 interface FeatureBoxProps {
   iconXml: string;
@@ -14,7 +15,9 @@ interface FeatureBoxProps {
   buttonIconXml?: string;
   buttonText?: string;
   onPress?: () => void;
-  onEdit?: (setActive: (value: boolean) => void) => void; // Modified to pass setActive
+  onEdit?: (setActive: (value: boolean) => void) => void;
+  pressed?: boolean;
+  setPressed?: (value: boolean) => void;
 }
 
 export default function FeatureBox({
@@ -26,8 +29,20 @@ export default function FeatureBox({
   buttonText,
   onPress,
   onEdit,
+  pressed = false,
+  setPressed,
 }: FeatureBoxProps) {
   const [active, setActive] = useState(false);
+  const dispatch = useDispatch();
+
+  const handlePriceButtonPress = () => {
+    if (buttonText) {
+      dispatch(addFeaturePrice(buttonText));
+      if (setPressed) {
+        setPressed(true);
+      }
+    }
+  };
 
   return (
     <Pressable onPress={() => !showButton && setActive(true)}>
@@ -78,19 +93,21 @@ export default function FeatureBox({
             {subtitle}
           </Text>
           {showButton && buttonIconXml && buttonText && (
-            <View style={styles.boxButton}>
-              <SvgXml xml={buttonIconXml} />
-              <Text
-                style={{
-                  color: "#fff",
-                  fontFamily: fonts.almaraiRegular,
-                  fontSize: 12,
-                  textAlign: "center",
-                }}
-              >
-                {buttonText}
-              </Text>
-            </View>
+            <Pressable onPress={handlePriceButtonPress}>
+              <View style={styles.boxButton}>
+                <SvgXml xml={buttonIconXml} />
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontFamily: fonts.almaraiRegular,
+                    fontSize: 12,
+                    textAlign: "center",
+                  }}
+                >
+                  {buttonText}
+                </Text>
+              </View>
+            </Pressable>
           )}
         </View>
       </View>
