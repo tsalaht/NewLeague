@@ -107,9 +107,9 @@ export default function NewLeague() {
                 >
                   إعدادات الجلسة
                 </Text>
-                <Pressable>
+                <Pressable onPress={() => setIsSessiontVisible(true)}>
                   <View style={styl.controlButtons}>
-                    <Pressable onPress={() => setIsSessiontVisible(true)}>
+                    <Pressable >
                     <View style={styl.iconsContainer}>
                       <SvgXml xml={gameTypeIcon} />
                     </View>
