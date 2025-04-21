@@ -5,11 +5,12 @@ import {
   StyleSheet,
   Pressable,
   TextInput,
+  ScrollView,
 } from "react-native";
 import styles from "./Styles/Index";
 import Colors from "../Colors";
 import fonts from "../fonts";
-import React, { useState } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { SvgXml } from "react-native-svg";
 import { BlurView } from "expo-blur";
 import { allIcons } from "./alliconst";
@@ -24,21 +25,65 @@ import Money from "../Components/Money";
 import LeagueSettingsModal2 from "../Components/LeagueSettingsModal2";
 import { useSelector } from "react-redux";
 import { RootState } from "../Store/store";
+import CardsBottomSheets from "../Components/CardsBottomSheets";
+import SessionBottomSheet from "../Components/SessionBottomSheet";
+import CupBottomSheet from "../Components/CupBottomSheet";
+import TitelsBottomSheets from "../Components/TitelsBottomSheets";
+import MessageBottomSheets from "../Components/MessageBottomSheets";
 
 export default function NewLeague() {
-  const [selectedTab, setSelectedTab] = useState<string>("adds");
-  const [isModalVisible, setIsModalVisible] = useState<boolean>(false); 
-  const [isModal2Visible, setIsModal2Visible] = useState<boolean>(false); 
-  const [isTimeSetVisible, setIsTimeSetVisible] = useState<boolean>(false); 
-  const [isSessiontVisible, setIsSessiontVisible] = useState<boolean>(false); 
-  const [isFirstWinerVisible, setIsFirstWinerVisible] = useState<boolean>(false); 
-  const [isFFeaturesVisible, setIsFeaturesVisible] = useState<boolean>(false); 
-  const [isMoneyVisible, setIsMoneyVisible] = useState<boolean>(false); 
+  const bottomSheetRef = useRef<any>(null);
+  const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
+  const [isBottomSheetVisible2, setBottomSheetVisible2] = useState(false);
+  const [isBottomSheetVisible3, setBottomSheetVisible3] = useState(false);
+  const [isBottomSheetVisible4, setBottomSheetVisible4] = useState(false);
+  const [isBottomSheetVisible5, setBottomSheetVisible5] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+  const [isModal2Visible, setIsModal2Visible] = useState<boolean>(false);
+  const [isTimeSetVisible, setIsTimeSetVisible] = useState<boolean>(false);
+  const [isSessiontVisible, setIsSessiontVisible] = useState<boolean>(false);
+  const [isFirstWinerVisible, setIsFirstWinerVisible] = useState<boolean>(false);
+  const [isFFeaturesVisible, setIsFeaturesVisible] = useState<boolean>(false);
+  const [isMoneyVisible, setIsMoneyVisible] = useState<boolean>(false);
   const [selectedTime, setSelectedTime] = useState<string>("خلال 15 دقيقة");
+  const [activeFeatures, setActiveFeatures] = useState<
+    { iconXml: string; title: string }[]
+  >([]);
   const { selectedTeam, selectedGame } = useSelector((state: RootState) => state.leagueSettings);
   const numberOfPlayers = selectedTeam ? selectedTeam.split(" ")[0] : "16";
   const prizeAmount = useSelector((state: RootState) => state.firstWinner.prizeAmount);
   const totalPrice = useSelector((state: RootState) => state.featurePrice.totalPrice);
+  const openBottomSheet = useCallback(() => {
+    setBottomSheetVisible(true);
+  }, []);
+  const openBottomSheet2 = useCallback(() => {
+    setBottomSheetVisible2(true);
+  }, []);
+  const openBottomSheet3 = useCallback(() => {
+    setBottomSheetVisible3(true);
+  }, []);
+  const openBottomSheet4 = useCallback(() => {
+    setBottomSheetVisible4(true);
+  }, []);
+  const openBottomSheet5 = useCallback(() => {
+    setBottomSheetVisible5(true);
+  }, []);
+  
+  const closeBottomSheet = useCallback(() => {
+    setBottomSheetVisible(false);
+  }, []);
+  const closeBottomSheet2 = useCallback(() => {
+    setBottomSheetVisible2(false);
+  }, []);
+  const closeBottomSheet3 = useCallback(() => {
+    setBottomSheetVisible3(false);
+  }, []);
+  const closeBottomSheet4 = useCallback(() => {
+    setBottomSheetVisible4(false);
+  }, []);
+  const closeBottomSheet5 = useCallback(() => {
+    setBottomSheetVisible5(false);
+  }, []);
   const { waveIcon, docsIcon, rocketIcon, rappitIcon, turtleIcon, selectedLevel } = useSelector(
     (state: RootState) => state.sessionSettings
   );
@@ -53,7 +98,8 @@ export default function NewLeague() {
   }
   const isWaveActive = waveIcon.includes('fill="#FFFDFA"');
   const gameType = isWaveActive ? 'لعب حر' : 'لعب محدود';
-  const gameTypeIcon = isWaveActive ? allIcons.leftarrow :  allIcons.docs.replace(/fill="#262B33"/g, `fill="${"#DC9F46"}"`);;
+  const gameTypeIcon = isWaveActive ? allIcons.leftarrow : allIcons.docs.replace(/fill="#262B33"/g, `fill="${"#DC9F46"}"`);
+  
   return (
     <View style={styles.viewContainer}>
       <ImageBackground
@@ -109,44 +155,43 @@ export default function NewLeague() {
                 </Text>
                 <Pressable onPress={() => setIsSessiontVisible(true)}>
                   <View style={styl.controlButtons}>
-                    <Pressable >
-                    <View style={styl.iconsContainer}>
-                      <SvgXml xml={gameTypeIcon} />
-                    </View>
+                    <Pressable>
+                      <View style={styl.iconsContainer}>
+                        <SvgXml xml={gameTypeIcon} />
+                      </View>
                     </Pressable>
-           <Pressable>
-           <View style={styl.iconsContainer}>
-                      <SvgXml xml={gameSpeedIcon} />
-                    </View>
-           </Pressable>
-               <Pressable>
-               <View
-                      style={{
-                        backgroundColor: "#CD7F32",
-                        borderRadius: 4,
-                        width: 34,
-                        height: 19,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        shadowColor: "#000000",
-                        shadowOffset: { width: 0, height: 3 },
-                        shadowOpacity: 0.6,
-                        shadowRadius: 3,
-                        elevation: 5,
-                      }}
-                    >
-                      <Text
+                    <Pressable>
+                      <View style={styl.iconsContainer}>
+                        <SvgXml xml={gameSpeedIcon} />
+                      </View>
+                    </Pressable>
+                    <Pressable>
+                      <View
                         style={{
-                          fontSize: 8,
-                          fontFamily: fonts.almaraiRegular,
-                          color: Colors.DEFAULT_WHITE,
+                          backgroundColor: "#CD7F32",
+                          borderRadius: 4,
+                          width: 34,
+                          height: 19,
+                          alignItems: "center",
+                          justifyContent: "center",
+                          shadowColor: "#000000",
+                          shadowOffset: { width: 0, height: 3 },
+                          shadowOpacity: 0.6,
+                          shadowRadius: 3,
+                          elevation: 5,
                         }}
                       >
-                    {selectedLevel}
-                      </Text>
-                    </View>
-               </Pressable>
-               
+                        <Text
+                          style={{
+                            fontSize: 8,
+                            fontFamily: fonts.almaraiRegular,
+                            color: Colors.DEFAULT_WHITE,
+                          }}
+                        >
+                          {selectedLevel}
+                        </Text>
+                      </View>
+                    </Pressable>
                   </View>
                 </Pressable>
               </View>
@@ -166,7 +211,6 @@ export default function NewLeague() {
                     <Pressable onPress={() => setIsTimeSetVisible(true)}>
                       <View style={styl.iconsContainer}>
                         <SvgXml xml={allIcons.clock} />
-           
                       </View>
                     </Pressable>
                     <Pressable onPress={() => setIsModalVisible(true)}>
@@ -180,11 +224,11 @@ export default function NewLeague() {
                             textAlign: "right",
                           }}
                         >
-{numberOfPlayers}
+                          {numberOfPlayers}
                         </Text>
                       </View>
                     </Pressable>
-                    <Pressable onPress={()=>setIsModal2Visible(true)}>
+                    <Pressable onPress={() => setIsModal2Visible(true)}>
                       <View style={styl.iconsContainer}>
                         <SvgXml xml={allIcons.smallcards} />
                         <Text
@@ -195,7 +239,7 @@ export default function NewLeague() {
                             textAlign: "right",
                           }}
                         >
-                      {selectedGame}
+                          {selectedGame}
                         </Text>
                       </View>
                     </Pressable>
@@ -215,30 +259,62 @@ export default function NewLeague() {
                 جائزة الدوري
               </Text>
               <Pressable>
-                <View
-                  style={{
-                    ...styl.addCards,
-                    backgroundColor: Colors.BACKGROUND_3,
-                    borderRadius: 5.48,
-                  }}
-                >
-                      <Pressable onPress={()=>setIsFirstWinerVisible(true)} >
-
-<SvgXml xml={allIcons.add} />
-</Pressable>
-                  <Text
+                {prizeAmount !== "0" ? (
+                  <View
                     style={{
-                      color: "#939599",
-                      fontFamily: fonts.almaraiRegular,
-                      textAlign: "right",
-                      fontSize: 12,
+                      ...styl.addCards,
+                      backgroundColor: Colors.BACKGROUND_3,
+                      borderRadius: 5.48,
+                      justifyContent: "space-between",
                     }}
                   >
-                    أضف قيمة جائزة المركز الأول
-                  </Text>
-              
-                  <SvgXml xml={allIcons.dimond} />
-                </View>
+                    <View
+                      style={{
+                        flexDirection: "row-reverse",
+                        alignItems: "center",
+                        gap: 4,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color: "#939599",
+                          fontFamily: fonts.almaraiRegular,
+                          textAlign: "right",
+                          fontSize: 12,
+                        }}
+                      >
+                        {prizeAmount} جوهرة للمركز الأول
+                      </Text>
+                      <SvgXml xml={allIcons.dimond} />
+                    </View>
+                    <Pressable onPress={() => setIsFirstWinerVisible(true)}>
+                      <SvgXml xml={allIcons.edit2} />
+                    </Pressable>
+                  </View>
+                ) : (
+                  <View
+                    style={{
+                      ...styl.addCards,
+                      backgroundColor: Colors.BACKGROUND_3,
+                      borderRadius: 5.48,
+                    }}
+                  >
+                    <Pressable onPress={() => setIsFirstWinerVisible(true)}>
+                      <SvgXml xml={allIcons.add} />
+                    </Pressable>
+                    <Text
+                      style={{
+                        color: "#939599",
+                        fontFamily: fonts.almaraiRegular,
+                        textAlign: "right",
+                        fontSize: 12,
+                      }}
+                    >
+                      أضف قيمة جائزة المركز الأول
+                    </Text>
+                    <SvgXml xml={allIcons.dimond} />
+                  </View>
+                )}
               </Pressable>
               <Pressable>
                 <View style={{ ...styl.addCards, borderRadius: 5.48 }}>
@@ -258,49 +334,119 @@ export default function NewLeague() {
             </View>
             <View style={styl.thirdContainer}>
               <View style={styl.addIconeContainer}>
-                <Pressable onPress={()=>setIsFeaturesVisible(true)}>
-
-                <SvgXml xml={allIcons.add2} />
+                <Pressable onPress={() => setIsFeaturesVisible(true)}>
+                  <SvgXml xml={allIcons.add2} />
                 </Pressable>
               </View>
               <View style={styl.textContainer}>
-                <Text
-                  style={{
-                    color: "#939599",
-                    fontFamily: fonts.almaraiBold,
-                    textAlign: "right",
-                    fontSize: 14,
-                  }}
-                >
-                  ميز الدوري الخاص بك بإضافات حصرية
-                </Text>
+                {activeFeatures.length > 0 ? (
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    style={{ flexDirection: "row" }}
+                    contentContainerStyle={{
+                      alignItems: "center",
+                      paddingHorizontal: 8,
+                      gap: 24,
+                    }}
+                  >
+                    {activeFeatures.map((feature, index) => (
+                      <Pressable key={index} onPress={() => {
+                        if (feature.title === "كأس البطولة") {
+                          openBottomSheet3(); 
+                        }else if(feature.title === "لقب محدد"){
+                          openBottomSheet4(); 
+                        }else if(feature.title === "رسالة الدوري"){
+                          openBottomSheet5(); 
+                        }
+                      }}>
+                        <View
+                          style={{
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: 4,
+                            backgroundColor: Colors.BACKGROUND_5,
+                            width: 73,
+                            height: 80,
+                            borderRadius: 8,
+                            position: "relative",
+                            overflow: "hidden",
+                          }}
+                        >
+                          <View
+                            style={{
+                              position: "absolute",
+                              top: -1,
+                              right: -1,
+                              borderBottomLeftRadius: 6,
+                              backgroundColor: "#929292",
+                              width: 15,
+                              height: 15,
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <SvgXml xml={allIcons.edit} />
+                          </View>
+                          <SvgXml xml={feature.iconXml} width={36} height={37} />
+                          <Text
+                            style={{
+                              color: Colors.DEFAULT_WHITE,
+                              fontFamily: fonts.almaraiBold,
+                              fontSize: 6.63,
+                              textAlign: "center",
+                            }}
+                          >
+                            {feature.title}
+                          </Text>
+                        </View>
+                      </Pressable>
+                    ))}
+                  </ScrollView>
+                ) : (
+                  <Text
+                    style={{
+                      color: "#939599",
+                      fontFamily: fonts.almaraiBold,
+                      textAlign: "right",
+                      fontSize: 14,
+                    }}
+                  >
+                    ميز الدوري الخاص بك بإضافات حصرية
+                  </Text>
+                )}
               </View>
             </View>
             <View style={{ ...styl.thirdContainer }}>
-              <View style={styl.box}>
-                <Text
-                  style={{
-                    color: "#939599",
-                    fontFamily: fonts.almaraiRegular,
-                    fontSize: 10,
-                  }}
-                >
-                  ورق الدوري
-                </Text>
-                <SvgXml xml={allIcons.twoCards} />
-              </View>
-              <View style={styl.box}>
-                <Text
-                  style={{
-                    color: "#939599",
-                    fontFamily: fonts.almaraiRegular,
-                    fontSize: 10,
-                  }}
-                >
-                  خلفية الجلسة
-                </Text>
-                <SvgXml xml={allIcons.bigCard} />
-              </View>
+              <Pressable style={styl.box} onPress={openBottomSheet}>
+                <View style={styl.box}>
+                  <Text
+                    style={{
+                      color: "#939599",
+                      fontFamily: fonts.almaraiRegular,
+                      fontSize: 10,
+                    }}
+                  >
+                    ورق الدوري
+                  </Text>
+                  <SvgXml xml={allIcons.twoCards} />
+                </View>
+              </Pressable>
+              <Pressable onPress={openBottomSheet2}>
+                <View style={styl.box}>
+                  <Text
+                    style={{
+                      color: "#939599",
+                      fontFamily: fonts.almaraiRegular,
+                      fontSize: 10,
+                    }}
+                  >
+                    خلفية الجلسة
+                  </Text>
+                  <SvgXml xml={allIcons.bigCard} />
+                </View>
+              </Pressable>
             </View>
           </View>
         </View>
@@ -331,7 +477,7 @@ export default function NewLeague() {
                         fontSize: 12,
                       }}
                     >
-                 {prizeAmount}
+                      {prizeAmount}
                     </Text>
                   </View>
                   <Text
@@ -356,7 +502,7 @@ export default function NewLeague() {
                         fontSize: 12,
                       }}
                     >
-                   {totalPrice}
+                      {totalPrice}
                     </Text>
                   </View>
                   <Text
@@ -389,7 +535,7 @@ export default function NewLeague() {
                         fontSize: 12,
                       }}
                     >
-                     {+totalPrice + +prizeAmount}
+                      {+totalPrice + +prizeAmount}
                     </Text>
                   </View>
                   <Text
@@ -407,7 +553,7 @@ export default function NewLeague() {
                 <LinearButton2
                   text="إنشاء دوري"
                   textStyles={{ fontSize: 12, fontFamily: fonts.almaraiBold }}
-                  onPress={() => {setIsMoneyVisible(true)}}
+                  onPress={() => setIsMoneyVisible(true)}
                   containerStyle={{
                     width: "100%",
                     height: 40,
@@ -430,7 +576,7 @@ export default function NewLeague() {
         <TimeSet
           visible={isTimeSetVisible}
           onClose={() => setIsTimeSetVisible(false)}
-          onSelectTime={(time) => setSelectedTime(time)} // Update selected time
+          onSelectTime={(time) => setSelectedTime(time)}
         />
         <SessionSettings
           visible={isSessiontVisible}
@@ -440,9 +586,20 @@ export default function NewLeague() {
           visible={isFirstWinerVisible}
           onClose={() => setIsFirstWinerVisible(false)}
         />
-        <Features
+       <Features
           visible={isFFeaturesVisible}
           onClose={() => setIsFeaturesVisible(false)}
+          onActivate={(iconXml: string, title: string) => {
+            setActiveFeatures((prev) => {
+              if (prev.some((feature) => feature.title === title)) {
+                return prev;
+              }
+              return [...prev, { iconXml, title }];
+            });
+          }}
+          onRemove={(title: string) => {
+            setActiveFeatures((prev) => prev.filter((feature) => feature.title !== title));
+          }}
         />
         <Money
           visible={isMoneyVisible}
@@ -451,6 +608,26 @@ export default function NewLeague() {
         <LeagueSettingsModal2
           visible={isModal2Visible}
           onClose={() => setIsModal2Visible(false)}
+        />
+        <CardsBottomSheets
+          isVisible={isBottomSheetVisible}
+          onClose={closeBottomSheet}
+        />
+        <SessionBottomSheet
+          isVisible={isBottomSheetVisible2}
+          onClose={closeBottomSheet2}
+        />
+        <CupBottomSheet
+          isVisible={isBottomSheetVisible3}
+          onClose={closeBottomSheet3}
+        />
+        <TitelsBottomSheets
+          isVisible={isBottomSheetVisible4}
+          onClose={closeBottomSheet4}
+        />
+        <MessageBottomSheets
+          isVisible={isBottomSheetVisible5}
+          onClose={closeBottomSheet5}
         />
       </ImageBackground>
     </View>
@@ -571,7 +748,6 @@ const styl = StyleSheet.create({
     justifyContent: "center",
     borderTopEndRadius: 24,
     borderTopStartRadius: 24,
-    zIndex: 8,
   },
   results: {
     backgroundColor: Colors.BACKGROUND_3,

@@ -155,6 +155,21 @@ flexDirection:'column',
 paddingTop:25,
 gap:16
 },
+buttonsContainer: {
+  flexDirection: "row-reverse",
+  alignItems: "center",
+  marginTop: 16,
+  gap: 16,
+  width:'100%',
+
+},
+buttons: {
+  width:167.5,
+  height: 42,
+  alignItems: "center",
+  justifyContent: "center",
+  borderRadius: 8,
+},
 });
 
 export default styles;

@@ -71,7 +71,6 @@ export default function SessionSettings({ visible, onClose }: SessionSettingsPro
     return allIcons.turtle.replace(/fill="#262B33"/g, `fill="${fillColor}"`);
   };
 
-  // Initialize icons on mount based on default states
   useEffect(() => {
     dispatch(setWaveIcon(getWaveSvgXml(activeOption === "instant")));
     dispatch(setDocsIcon(getDocsSvgXml(activeOption === "scheduled")));

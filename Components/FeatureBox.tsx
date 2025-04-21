@@ -18,6 +18,7 @@ interface FeatureBoxProps {
   onEdit?: (setActive: (value: boolean) => void) => void;
   pressed?: boolean;
   setPressed?: (value: boolean) => void;
+  onActivate?: (iconXml: string, title: string) => void;
 }
 
 export default function FeatureBox({
@@ -31,6 +32,7 @@ export default function FeatureBox({
   onEdit,
   pressed = false,
   setPressed,
+  onActivate,
 }: FeatureBoxProps) {
   const [active, setActive] = useState(false);
   const dispatch = useDispatch();
@@ -44,10 +46,18 @@ export default function FeatureBox({
     }
   };
 
+  const handleBoxPress = () => {
+    if (!showButton) {
+      setActive(true);
+      if (onActivate) {
+        onActivate(iconXml, title);
+      }
+    }
+  };
+
   return (
-    <Pressable onPress={() => !showButton && setActive(true)}>
+    <Pressable onPress={handleBoxPress}>
       <View style={styles.box}>
-        {/* Show overlay only for boxes without button and when active */}
         {!showButton && active && (
           <View style={styles.acivateContainer}>
             <View style={{ marginTop: 20 }}>

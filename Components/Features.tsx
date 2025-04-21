@@ -2,21 +2,26 @@ import { View, Text, StyleSheet, Pressable, ScrollView } from "react-native";
 import { BlurView } from "expo-blur";
 import Colors from "../Colors";
 import fonts from "../fonts";
-import LinearButton2 from "./linearButton2";
 import { allIcons } from "../Views/alliconst";
 import FeatureBox from "./FeatureBox";
 import { SvgXml } from "react-native-svg";
 import { useState } from "react";
 
-interface Features {
+interface FeaturesProps {
   visible: boolean;
   onClose: () => void;
+  onActivate?: (iconXml: string, title: string) => void;
+  onRemove?: (title: string) => void;
 }
 
-export default function Features({ visible, onClose }: Features) {
+export default function Features({ visible, onClose, onActivate, onRemove }: FeaturesProps) {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [activeFeatureBox, setActiveFeatureBox] = useState<((value: boolean) => void) | null>(null);
-  // Track pressed state for each FeatureBox
+  const [selectedFeature, setSelectedFeature] = useState<{
+    iconXml: string;
+    title: string;
+    subtitle: string;
+  } | null>(null);
   const [pressedStates, setPressedStates] = useState<{
     [key: string]: boolean;
   }>({
@@ -28,12 +33,6 @@ export default function Features({ visible, onClose }: Features) {
     "رسالة الدوري": false,
     "دردشة صوتية": false,
   });
-  // Store selected FeatureBox details for modal
-  const [selectedFeature, setSelectedFeature] = useState<{
-    iconXml: string;
-    title: string;
-    subtitle: string;
-  } | null>(null);
 
   const handleEditPress = (
     setActive: (value: boolean) => void,
@@ -49,19 +48,20 @@ export default function Features({ visible, onClose }: Features) {
   const handleRemovePress = () => {
     setIsModalVisible(false);
     if (activeFeatureBox) {
-      activeFeatureBox(false); // Reset active state
+      activeFeatureBox(false);
     }
     if (selectedFeature) {
-      // Reset pressed state for the selected FeatureBox
       setPressedStates((prev) => ({
         ...prev,
         [selectedFeature.title]: false,
       }));
+      if (onRemove) {
+        onRemove(selectedFeature.title);
+      }
     }
     setSelectedFeature(null);
   };
 
-  // Update pressed state for a specific FeatureBox
   const setPressed = (title: string, value: boolean) => {
     setPressedStates((prev) => ({
       ...prev,
@@ -82,7 +82,6 @@ export default function Features({ visible, onClose }: Features) {
         justifyContent: "center",
       }}
     >
-      {/* Modal for editing feature */}
       {isModalVisible && selectedFeature && (
         <View
           style={{
@@ -165,10 +164,7 @@ export default function Features({ visible, onClose }: Features) {
                     alignItems: "center",
                     justifyContent: "center",
                     shadowColor: Colors.DANGER_600,
-                    shadowOffset: {
-                      width: 0,
-                      height: 4,
-                    },
+                    shadowOffset: { width: 0, height: 4 },
                     shadowOpacity: 0.3,
                     shadowRadius: 6,
                     elevation: 6,
@@ -205,7 +201,7 @@ export default function Features({ visible, onClose }: Features) {
                       textAlign: "center",
                     }}
                   >
-                    تعديل
+                    إغلاق
                   </Text>
                 </View>
               </Pressable>
@@ -272,6 +268,7 @@ export default function Features({ visible, onClose }: Features) {
                 onEdit={(setActive) =>
                   handleEditPress(setActive, allIcons.cup, "كأس البطولة", "اختر كأس البطولة")
                 }
+                onActivate={onActivate}
               />
               <FeatureBox
                 iconXml={allIcons.chear2}
@@ -290,6 +287,7 @@ export default function Features({ visible, onClose }: Features) {
                     "فعل خلفية الجلسة للاعبين"
                   )
                 }
+                onActivate={onActivate}
               />
             </View>
             <View style={styles.boxContainer}>
@@ -310,6 +308,7 @@ export default function Features({ visible, onClose }: Features) {
                     "الالقاب المسموح المشاركة بها"
                   )
                 }
+                onActivate={onActivate}
               />
               <FeatureBox
                 iconXml={allIcons.winer}
@@ -328,6 +327,7 @@ export default function Features({ visible, onClose }: Features) {
                     "احتفل بفريقك المفضل"
                   )
                 }
+                onActivate={onActivate}
               />
             </View>
             <View style={styles.boxContainer}>
@@ -348,6 +348,7 @@ export default function Features({ visible, onClose }: Features) {
                     "حدد تصاميم ورق الدوري"
                   )
                 }
+                onActivate={onActivate}
               />
               <FeatureBox
                 iconXml={allIcons.letter}
@@ -366,6 +367,7 @@ export default function Features({ visible, onClose }: Features) {
                     "اكتب رسالتك لتظهر للجميع"
                   )
                 }
+                onActivate={onActivate}
               />
             </View>
             <View
@@ -393,6 +395,7 @@ export default function Features({ visible, onClose }: Features) {
                     "فعل الدردشة الصوتية للاعبين"
                   )
                 }
+                onActivate={onActivate}
               />
             </View>
           </ScrollView>
